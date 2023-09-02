@@ -1,11 +1,13 @@
 import CommandParam from './CommandParam';
 import RepeatTypeException from './exceptions/RepeatTypeException';
+import CommandContext from './CommandContext';
 
 export default class Command {
 	private readonly cmd: string = '';
 	private children: Command[] = [];
 	private params: CommandParam[] = [];
 	private end: boolean = false;
+	private callback: Function | null = null;
 	constructor(cmd: string) {
 		this.cmd = cmd;
 	}
@@ -26,5 +28,12 @@ export default class Command {
 		if (this.children.length !== 0) throw new RepeatTypeException('当前命令已被设置为子命令。');
 		this.params.push(param);
 		this.end = true;
+	}
+	public setCallback(cb: Function): void {
+		this.callback = cb;
+	}
+	public callCommandCallback(ctx: CommandContext) {
+		// @ts-ignore
+		return Promise.resolve().then(() => this.callback !== null ? this.callback(): false);
 	}
 }

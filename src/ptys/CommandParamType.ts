@@ -1,7 +1,7 @@
 import CommandParam from '../CommandParam';
 
 export default abstract class CommandParamType {
-	public type: string = null;
+	public type: string = '';
 
 	/**
 	 * 参数合法验证

@@ -6,6 +6,7 @@ import CommandParamType from './ptys/CommandParamType';
 import RepeatTypeException from './exceptions/RepeatTypeException';
 import Command from './Command';
 import CommandParam from './CommandParam';
+import NoParamTypeException from './exceptions/NoParamTypeException';
 
 /**
  * 命令工厂
@@ -14,6 +15,7 @@ export default class CommandFactory {
 	private static isRegisterParamType: CommandParamType[] = [
 		new StringType()
 	];
+	private static isRegisterCommandList: Command[] = [];
 
 	/**
 	 * 验证参数类型是否有效
@@ -41,15 +43,31 @@ export default class CommandFactory {
 	 */
 	public static register(cmd: string, callback: Function): void {
 		let paramInformation = this.getStateParam(cmd);
-		let commands: string[] = cmd.substring(paramInformation.start).split(' ');
-		let parent = new Command(commands[0]);
-		// TODO: 先把所有子命令保存到一个变量中，最后再把参数添加到最后一个子命令中。
-		for (let i = 1; i < commands.length; i ++) {
-			let c = new Command(commands[i]);
-			let props = this.getParamProps(paramInformation.params[0]);
-			c.addParam(new CommandParam(props.type, props.key, props.props));
-			parent.addChildren(c);
+		let commands: string[] = cmd.substring(0, paramInformation.start).split(' ');
+		let cmds = commands.map(v => new Command(v)).filter(v => v.getCmd().length !== 0);
+		for (let i = cmds.length - 1; i >= 0; i --) {
+			let current = cmds[i];
+			let previous = cmds[i - 1];
+			if (previous !== undefined) {
+				previous.addChildren(current);
+			}
 		}
+		// 添加参数到命令
+		let endCommand = cmds[cmds.length - 1];
+		for (let param of paramInformation.params) {
+			let p = this.parseCommandParam(param);
+			endCommand.addParam(p);
+		}
+		endCommand.setCallback(callback);
+		this.isRegisterCommandList.push(cmds[0]);
+	}
+
+	/**
+	 * 触发命令
+	 * @param cmd
+	 */
+	public static commit(cmd: string) {
+
 	}
 
 	/**
@@ -105,10 +123,10 @@ export default class CommandFactory {
 	}
 
 	/**
-	 * 获取参数的规则
+	 * 解析参数
 	 * @param param
 	 */
-	public static getParamProps(param: string): ParamProps {
+	public static parseCommandParam(param: string): CommandParam {
 		let pos: number = 0;
 		let isType: boolean = false;
 		let isKey: boolean = false;
@@ -137,7 +155,7 @@ export default class CommandFactory {
 				if (isType) {
 					type = currentValue;
 					if (!this.validateParamType(type)) {
-						throw new Error('未知的参数类型。');
+						throw new NoParamTypeException('未知的参数类型。');
 					}
 					currentValue = '';
 					isType = false;
@@ -159,7 +177,7 @@ export default class CommandFactory {
 				if (isType) {
 					type = currentValue;
 					if (!this.validateParamType(type)) {
-						throw new Error('未知的参数类型。');
+						throw new NoParamTypeException('未知的参数类型。');
 					}
 					currentValue = '';
 					isType = false;
@@ -167,7 +185,7 @@ export default class CommandFactory {
 				} else if (isProp && isPropVal) {
 					propVal = currentValue;
 					if (propKey === '' || propVal === '') {
-						throw new Error('无效的参数声明。');
+						throw new NullityDeclarationException('无效的参数声明。');
 					}
 					currentValue = '';
 					props[propKey] = propVal;
@@ -178,7 +196,7 @@ export default class CommandFactory {
 		}
 		return {
 			props,
-			type: null,
+			type: new StringType(),
 			key
 		}
 	}
