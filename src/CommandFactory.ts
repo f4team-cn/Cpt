@@ -1,5 +1,5 @@
 import NoEndException from './exceptions/NoEndException';
-import {ParamProps, ParamPropsDeclaration, StateParams} from './I';
+import {ParamPropsDeclaration, StateParams} from './I';
 import NullityDeclarationException from './exceptions/NullityDeclarationException';
 import StringType from './ptys/StringType';
 import CommandParamType from './ptys/CommandParamType';
@@ -45,7 +45,7 @@ export default class CommandFactory {
 		let paramInformation = this.getStateParam(cmd);
 		let commands: string[] = cmd.substring(0, paramInformation.start).split(' ');
 		let cmds = commands.map(v => new Command(v)).filter(v => v.getCmd().length !== 0);
-		for (let i = cmds.length - 1; i >= 0; i --) {
+		for (let i = cmds.length - 1; i >= 0; i--) {
 			let current = cmds[i];
 			let previous = cmds[i - 1];
 			if (previous !== undefined) {
@@ -67,7 +67,36 @@ export default class CommandFactory {
 	 * @param cmd
 	 */
 	public static commit(cmd: string) {
+		if (cmd.length === 0) return;
+		console.log(this.getCommitCommandArgv(cmd));
+	}
 
+	private static getCommitCommandArgv(cmd: string): string[] {
+		let pos: number = 0;
+		let str: string = '';
+		let mark: boolean = false;
+		let sts: string[] = [];
+		while (pos < cmd.length) {
+			let char = cmd[pos++];
+			if (char === '"') {
+				mark = !mark;
+				continue;
+			}
+			if (char === ' ') {
+				if (!mark) {
+					sts.push(str);
+					str = '';
+				} else {
+					str += char;
+				}
+			} else {
+				str += char;
+			}
+		}
+		if (str.length !== 0) {
+			sts.push(str);
+		}
+		return sts;
 	}
 
 	/**
@@ -100,7 +129,7 @@ export default class CommandFactory {
 			if (char === ' ') {
 				if (temp.length !== 0) {
 					if (temp === '[]') {
-						throw new NullityDeclarationException(`无效的参数声明，${temp}`)
+						throw new NullityDeclarationException(`无效的参数声明，${temp}`);
 					}
 					params.push(temp);
 					temp = '';
@@ -111,7 +140,7 @@ export default class CommandFactory {
 			throw new NoEndException(`没有结尾的参数声明，${temp}`);
 		} else if (temp.length !== 0) {
 			if (temp === '[]') {
-				throw new NullityDeclarationException(`无效的参数声明，${temp}`)
+				throw new NullityDeclarationException(`无效的参数声明，${temp}`);
 			}
 			params.push(temp);
 		}
@@ -198,6 +227,6 @@ export default class CommandFactory {
 			props,
 			type: new StringType(),
 			key
-		}
+		};
 	}
 }
