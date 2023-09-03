@@ -12,6 +12,7 @@ import CommandParamValidateException from './exceptions/CommandParamValidateExce
 import CommandSyntaxException from './exceptions/CommandSyntaxException';
 import NoParamPropException from './exceptions/NoParamPropException';
 import NumberType from './ptys/NumberType';
+import BooleanType from './ptys/BooleanType';
 
 /**
  * 命令工厂
@@ -19,7 +20,8 @@ import NumberType from './ptys/NumberType';
 export default class CommandFactory {
 	private static isRegisterParamType: CommandParamType[] = [
 		new StringType(),
-		new NumberType()
+		new NumberType(),
+		new BooleanType()
 	];
 	private static isRegisterCommandList: Command[] = [];
 
