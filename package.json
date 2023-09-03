@@ -2,8 +2,8 @@
   "name": "cpt",
   "version": "1.0.0",
   "description": "Simple Command system",
-  "main": "index.js",
   "repository": "https://github.com/f4team-cn/Cpt",
   "author": "Yingyya",
-  "license": "MIT"
+  "license": "MIT",
+  "main": "./dist/index.js"
 }
