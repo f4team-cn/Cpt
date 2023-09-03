@@ -29,7 +29,7 @@ export default class CommandFactory {
 	 * 验证参数类型是否有效
 	 * @param type
 	 */
-	public static validateParamType(type: string) {
+	private static validateParamType(type: string) {
 		return (this.isRegisterParamType.filter(v => v.type === type)).length !== 0;
 	}
 
@@ -173,7 +173,7 @@ export default class CommandFactory {
 	 * @param cmd
 	 * @private
 	 */
-	public static getStateParam(cmd: string): StateParams {
+	private static getStateParam(cmd: string): StateParams {
 		let params: string[] = [];
 		let mark: boolean = false;
 		let pos: number = 0;
@@ -224,7 +224,7 @@ export default class CommandFactory {
 	 * 解析参数
 	 * @param param
 	 */
-	public static parseCommandParam(param: string): CommandParam {
+	private static parseCommandParam(param: string): CommandParam {
 		let pos: number = 0;
 		let isType: boolean = false;
 		let isKey: boolean = false;
