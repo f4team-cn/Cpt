@@ -45,4 +45,12 @@ export default class CommandContext {
 			this.set(key, ctx.get(key));
 		}
 	}
+
+	public clearProps() {
+		for (let key of Object.keys(this.extra)) {
+			if (key.startsWith('input.') && this.extra.hasOwnProperty(key)) {
+				delete this.extra[key];
+			}
+		}
+	}
 }

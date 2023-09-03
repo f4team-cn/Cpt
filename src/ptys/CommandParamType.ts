@@ -8,7 +8,7 @@ export default abstract class CommandParamType {
 	 * @param value
 	 * @param params
 	 */
-	abstract validate(value: any, params: CommandParam[]): boolean;
+	abstract validate(value: any, params?: CommandParam): boolean;
 
 	/**
 	 * 参数额外规则

@@ -7,6 +7,10 @@ import RepeatTypeException from './exceptions/RepeatTypeException';
 import Command from './Command';
 import CommandParam from './CommandParam';
 import NoParamTypeException from './exceptions/NoParamTypeException';
+import CommandContext from './CommandContext';
+import CommandParamValidateException from './exceptions/CommandParamValidateException';
+import CommandSyntaxException from './exceptions/CommandSyntaxException';
+import NoParamPropException from './exceptions/NoParamPropException';
 
 /**
  * 命令工厂
@@ -65,10 +69,71 @@ export default class CommandFactory {
 	/**
 	 * 触发命令
 	 * @param cmd
+	 * @param ctx
 	 */
-	public static commit(cmd: string) {
+	public static commit(cmd: string, ctx?: CommandContext) {
 		if (cmd.length === 0) return;
-		console.log(this.getCommitCommandArgv(cmd));
+		let argv: string[] = this.getCommitCommandArgv(cmd);
+		let result = this.searchCommandObject(argv);
+		if (result.cmd === null) {
+			return;
+		}
+		if (ctx === undefined) {
+			ctx = new CommandContext();
+		}
+		let params: string[] = argv.slice(result.endPos);
+		let command: Command = result.cmd as Command;
+		// 参数验证
+		ctx.clearProps();
+		for (let i = 0; i < command.getCommandParams().length; i++) {
+			let param = command.getCommandParams()[i];
+			let value = params[i];
+			if (value === undefined && command.getCommandParams().length !== params.length) {
+				// TODO: 参数补全
+			}
+			// 调用类型的验证方法
+			if (!param.type.validate(value)) {
+				throw new CommandParamValidateException(`参数 ${param.key} 验证失败，${value} 不符合类型 ${param.type.type} 的规则。`);
+			}
+			ctx.set(`input.${param.key}`, param.type.toValue(value));
+		}
+		ctx.set('input.origin.cmd', cmd);
+		command.callCommandCallback(ctx).then(undefined);
+	}
+
+	/**
+	 * 根据命令查找命令对象
+	 * @private
+	 * @param argv
+	 */
+	private static searchCommandObject(argv: string[]): {
+		endPos: number,
+		cmd?: Command
+	} {
+		let pos: number = 0;
+		let flag: boolean = true;
+		let queryList: Command[] = this.isRegisterCommandList;
+		parentWhile: while (flag) {
+			for (let command of queryList) {
+				if (argv[pos] === undefined) {
+					flag = false;
+					break parentWhile;
+				}
+				if (command.getCmd() === argv[pos]) {
+					if (command.isEnd()) {
+						return {
+							endPos: pos + 1,
+							cmd: command
+						};
+					}
+					pos++;
+					queryList = command.getChildrenCommands();
+				}
+			}
+		}
+		return {
+			endPos: 0
+		};
 	}
 
 	private static getCommitCommandArgv(cmd: string): string[] {
@@ -198,9 +263,14 @@ export default class CommandFactory {
 				}
 			} else if (char === '=') {
 				if (isProp) {
+					if (!this.hasParamProps(type, currentValue)) {
+						throw new NoParamPropException(`未知的额外规则 ${currentValue} 在参数类型 ${type} 中。`);
+					}
 					propKey = currentValue;
 					currentValue = '';
 					isPropVal = true;
+				} else {
+					throw new CommandSyntaxException(`意外的 ${char}。`);
 				}
 			} else if (char === ']') {
 				if (isType) {
@@ -225,8 +295,37 @@ export default class CommandFactory {
 		}
 		return {
 			props,
-			type: new StringType(),
+			type: this.getParamType(type),
 			key
 		};
+	}
+
+	/**
+	 * 根据类型字符串获取类型对象
+	 * @param type
+	 * @private
+	 */
+	private static getParamType(type: string): CommandParamType {
+		for (let param of this.isRegisterParamType) {
+			if (param.type === type) {
+				return  param;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * 检查额外规则是否存在
+	 * @param type
+	 * @param propKey
+	 * @private
+	 */
+	private static hasParamProps(type: string, propKey: string): boolean {
+		for (let param of this.isRegisterParamType) {
+			if (param.type === type) {
+				return param.props().includes(propKey);
+			}
+		}
+		return false;
 	}
 }

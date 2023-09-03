@@ -6,7 +6,7 @@ export default class Command {
 	private readonly cmd: string = '';
 	private children: Command[] = [];
 	private params: CommandParam[] = [];
-	private end: boolean = false;
+	private _end: boolean = false;
 	private callback: Function | null = null;
 	constructor(cmd: string) {
 		this.cmd = cmd;
@@ -27,13 +27,15 @@ export default class Command {
 	public addParam(param: CommandParam) {
 		if (this.children.length !== 0) throw new RepeatTypeException('当前命令已被设置为子命令。');
 		this.params.push(param);
-		this.end = true;
+		this._end = true;
 	}
 	public setCallback(cb: Function): void {
 		this.callback = cb;
 	}
-	public callCommandCallback(ctx: CommandContext) {
-		// @ts-ignore
-		return Promise.resolve().then(() => this.callback !== null ? this.callback(): false);
+	public async callCommandCallback(ctx: CommandContext): Promise<boolean> {
+		return (this.callback !== null ? this.callback(ctx) : false) as boolean;
+	}
+	public isEnd(): boolean {
+		return this._end;
 	}
 }
