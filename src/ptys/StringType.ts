@@ -15,6 +15,16 @@ export default class StringType extends CommandParamType {
 			return false;
 		}
 		if (param !== undefined) {
+			// len
+			if (param.props['len']) {
+				let len = (value as string).length;
+				let arr: number[] = (param.props['len'] as string).split('@').map(v => Number(v));
+				let max = arr[1];
+				let min = arr[0];
+				if (!(len >= min && len <= max)) {
+					return false;
+				}
+			}
 			// regex
 			if (param.props['regex']) {
 				let regex: string = param.props['regex'];
@@ -31,7 +41,8 @@ export default class StringType extends CommandParamType {
 
 	props(): string[] {
 		return [
-			'regex'
+			'regex',
+			'len'
 		];
 	}
 
@@ -40,6 +51,15 @@ export default class StringType extends CommandParamType {
 			case 'regex': {
 				if (!(value.startsWith('/') && value.endsWith('/'))) {
 					throw new ParamPropException(this.type, key, `正则表达式需要使用 / 包裹。`);
+				}
+				break;
+			}
+			case 'len': {
+				let arr: number[] = value.split('@').map(v => Number(v));
+				let max = arr[1];
+				let min = arr[0];
+				if (isNaN(max) || isNaN(min)) {
+					throw new ParamPropException(this.type, key, `范围需要是数字，最小值在左，最大值在右，之间使用 @ 分隔。`);
 				}
 				break;
 			}

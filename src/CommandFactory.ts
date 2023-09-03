@@ -11,13 +11,15 @@ import CommandContext from './CommandContext';
 import CommandParamValidateException from './exceptions/CommandParamValidateException';
 import CommandSyntaxException from './exceptions/CommandSyntaxException';
 import NoParamPropException from './exceptions/NoParamPropException';
+import NumberType from './ptys/NumberType';
 
 /**
  * 命令工厂
  */
 export default class CommandFactory {
 	private static isRegisterParamType: CommandParamType[] = [
-		new StringType()
+		new StringType(),
+		new NumberType()
 	];
 	private static isRegisterCommandList: Command[] = [];
 
