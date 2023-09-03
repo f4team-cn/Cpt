@@ -1,5 +1,5 @@
 import NoEndException from './exceptions/NoEndException';
-import {ParamPropsDeclaration, StateParams} from './I';
+import {CommandCallback, ParamPropsDeclaration, StateParams} from './I';
 import NullityDeclarationException from './exceptions/NullityDeclarationException';
 import StringType from './ptys/StringType';
 import CommandParamType from './ptys/CommandParamType';
@@ -45,7 +45,7 @@ export default class CommandFactory {
 	 * @param cmd
 	 * @param callback
 	 */
-	public static register(cmd: string, callback: Function): void {
+	public static register(cmd: string, callback: CommandCallback): void {
 		let paramInformation = this.getStateParam(cmd);
 		let commands: string[] = cmd.substring(0, paramInformation.start).split(' ');
 		let cmds = commands.map(v => new Command(v)).filter(v => v.getCmd().length !== 0);

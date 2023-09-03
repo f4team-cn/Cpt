@@ -1,4 +1,5 @@
 import CommandParamType from './ptys/CommandParamType';
+import CommandContext from './CommandContext';
 
 export interface StateParams {
 	params: string[],
@@ -9,3 +10,5 @@ export interface StateParams {
 export interface ParamPropsDeclaration {
 	[key: string]: any
 }
+
+export type CommandCallback = (ctx: CommandContext) => void;
