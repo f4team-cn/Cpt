@@ -20,4 +20,11 @@ export default abstract class CommandParamType {
 	 * @param value
 	 */
 	abstract toValue(value: any): any;
+
+	/**
+	 * 额外规则验证
+	 * @param key
+	 * @param value
+	 */
+	abstract propValidate(key: string, value: string): boolean;
 }

@@ -92,7 +92,7 @@ export default class CommandFactory {
 				// TODO: 参数补全
 			}
 			// 调用类型的验证方法
-			if (!param.type.validate(value)) {
+			if (!param.type.validate(value, param)) {
 				throw new CommandParamValidateException(`参数 ${param.key} 验证失败，${value} 不符合类型 ${param.type.type} 的规则。`);
 			}
 			ctx.set(`input.${param.key}`, param.type.toValue(value));
@@ -257,6 +257,9 @@ export default class CommandFactory {
 				} else if (isProp && isPropVal) {
 					propVal = currentValue;
 					currentValue = '';
+					if (!this.getParamType(type).propValidate(propKey, propVal)) {
+						throw new NoParamPropException(`不符合的额外规则 ${propKey}=${propVal} 在 参数类型 ${type} 中。`);
+					}
 					props[propKey] = propVal;
 					propKey = '';
 					propVal = '';
@@ -287,17 +290,16 @@ export default class CommandFactory {
 						throw new NullityDeclarationException('无效的参数声明。');
 					}
 					currentValue = '';
+					if (!this.getParamType(type).propValidate(propKey, propVal)) {
+						throw new NoParamPropException(`不符合的额外规则 ${propKey}=${propVal} 在 参数类型 ${type} 中。`);
+					}
 					props[propKey] = propVal;
 				}
 			} else {
 				currentValue += char;
 			}
 		}
-		return {
-			props,
-			type: this.getParamType(type),
-			key
-		};
+		return new CommandParam(this.getParamType(type), key, props);
 	}
 
 	/**
