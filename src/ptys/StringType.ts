@@ -22,7 +22,7 @@ export default class StringType extends CommandParamType {
 				return new RegExp(regex).test(str);
 			}
 		}
-		return str.length !== 0;
+		return true;
 	}
 
 	toValue(value: any): any {
