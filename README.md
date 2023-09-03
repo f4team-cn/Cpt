@@ -6,7 +6,20 @@
 
 其他语言将在”近期“陆续发布。
 
-### 示例
+### 使用
+
+#### 安装
+
+使用 `npm`
+```shell
+npm install yingyya-cpt
+```
+使用 `yarn`
+```shell
+yarn add yingyya-cpt
+```
+
+#### 代码
 
 `index.ts`：
 
